@@ -1,0 +1,34 @@
+version: '3'
+services:
+  messaging:
+    image: "rabbitmq"
+    ports:
+      - "5672:5672"
+  shopping-cart:
+    build: ./shopping-cart
+    command: ["./wait-for-it.sh", "messaging:5672", "-t", "90", "--", "node", "/usr/app/src/index.js"]
+    volumes:
+      - /usr/app
+      - /usr/app/node_modules
+    depends_on:
+      - "messaging"
+    ports:
+      - "4000:4000"
+  orders-processor:
+    build: ./orders-processor
+    command: ["./wait-for-it.sh", "messaging:5672", "-t", "90", "--", "node", "/usr/app/src/index.js"]
+    volumes:
+      - /usr/app
+      - /usr/app/node_modules
+    depends_on:
+      - "messaging"
+  orders-api:
+    build: ./orders-api
+    command: ["./wait-for-it.sh", "messaging:5672", "-t", "90", "--", "node", "/usr/app/src/index.js"]
+    volumes:
+      - /usr/app
+      - /usr/app/node_modules
+    depends_on:
+      - "messaging"
+    ports:
+      - "4002:4002"
